@@ -4,7 +4,6 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import {
   Upload,
-  Youtube,
   FileAudio,
   CheckCircle2,
   Music,
@@ -24,7 +23,6 @@ interface UploadPageProps {
 }
 
 export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
-  const [youtubeUrl, setYoutubeUrl] = useState('');
   const [uploadStatus, setUploadStatus] = useState<
     'idle' | 'uploading' | 'processing' | 'success'>('idle');
   const [progress, setProgress] = useState(0);
@@ -101,15 +99,6 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
     }, 1500);
   };
 
-  const handleYoutubeImport = () => {
-    if (youtubeUrl) {
-      // For YouTube, create a mock file
-      const mockFile = new File([''], 'youtube-video.mp3', { type: 'audio/mp3' });
-      setUploadedFile(mockFile);
-      startProcessing(mockFile);
-    }
-  };
-
   const handleStartLearning = () => {
     if (uploadedFile) {
       onStartLearning(detectedInstrument, generatedNotes, uploadedFile);
@@ -175,46 +164,6 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
           <div className="p-8 md:p-12">
             {uploadStatus === 'idle' && (
               <div className="space-y-12 animate-in fade-in duration-300">
-                {/* YouTube Section */}
-                <section className="space-y-6">
-                  <div className="flex items-center space-x-4 text-[#3E2723]">
-                    <div className="p-3 bg-red-50 rounded-full">
-                      <Youtube className="w-8 h-8 text-red-600" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold">
-                        Import from YouTube
-                      </h2>
-                      <p className="text-[#8B4513]/70 text-sm">
-                        Paste a video URL to extract audio
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <Input
-                      placeholder="https://youtube.com/watch?v=..."
-                      value={youtubeUrl}
-                      onChange={(e) => setYoutubeUrl(e.target.value)}
-                      className="flex-1 h-12 text-lg"
-                    />
-                    <Button
-                      onClick={handleYoutubeImport}
-                      disabled={!youtubeUrl}
-                      className="h-12 px-8"
-                    >
-                      Import
-                    </Button>
-                  </div>
-                </section>
-
-                <div className="relative flex items-center py-4">
-                  <div className="flex-grow border-t border-[#D4A574]/20"></div>
-                  <span className="flex-shrink-0 mx-6 text-[#8B4513]/50 font-serif italic text-lg">
-                    or upload file
-                  </span>
-                  <div className="flex-grow border-t border-[#D4A574]/20"></div>
-                </div>
-
                 {/* File Upload Section */}
                 <section className="space-y-6">
                   <div className="flex items-center space-x-4 text-[#3E2723]">
