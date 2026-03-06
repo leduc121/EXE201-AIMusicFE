@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Sidebar } from './components/Sidebar';
+import { Header } from './components/Header';
 import { LandingPage } from './pages/LandingPage';
 import { UploadPage } from './pages/UploadPage';
 import { LearningPage } from './pages/LearningPage';
 import { InstrumentDetailPage } from './pages/InstrumentDetailPage';
+import { LoginPage } from './pages/LoginPage';
 import { AudioProvider } from './contexts/AudioContext';
 import { NoteEvent } from './types/music';
 import { PIANO_DEMO_NOTES } from './data/DemoNotes';
@@ -89,6 +90,10 @@ export function App() {
       case 'learn':
         const props = getLearningPageProps();
         return <LearningPage {...props} onBack={() => handleNavigate('landing')} />;
+      case 'login':
+        return <LoginPage onNavigate={handleNavigate} isSignUp={false} />;
+      case 'signup':
+        return <LoginPage onNavigate={handleNavigate} isSignUp={true} />;
       case 'instrument-detail':
         return (
           <InstrumentDetailPage
@@ -102,17 +107,17 @@ export function App() {
     }
   };
 
-  const isLearningPage = currentPage === 'learn';
+  const hideSidebar = currentPage === 'learn' || currentPage === 'login' || currentPage === 'signup';
 
   return (
     <AudioProvider>
-      <div className="flex min-h-screen bg-[#FAF7F0] font-serif text-[#3E2723]">
-        {!isLearningPage && (
-          <Sidebar activePage={currentPage} onNavigate={handleNavigate} />
+      <div className="flex flex-col min-h-screen bg-[#FAF7F0] font-serif text-[#3E2723]">
+        {!hideSidebar && (
+          <Header activePage={currentPage} onNavigate={handleNavigate} />
         )}
 
-        <main className={`flex-1 transition-all duration-300 ${!isLearningPage ? 'lg:ml-72' : ''}`}>
-          <div className="animate-in fade-in slide-in-bottom-4 duration-500">
+        <main className={`flex-1 transition-all duration-300 w-full`}>
+          <div className="animate-in fade-in slide-in-bottom-4 duration-500 w-full">
             {renderPage()}
           </div>
         </main>
