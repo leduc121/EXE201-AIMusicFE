@@ -12,9 +12,11 @@ import {
   Loader2,
   Sparkles,
   ChevronLeft,
+  Download,
 } from 'lucide-react';
 import { NoteEvent } from '../types/music';
 import { mockSheetMusicGenerator } from '../services/MockSheetMusicGenerator';
+import { basicPitchAPI } from '../services/BasicPitchAPI';
 
 type InstrumentType = 'piano' | 'flute' | 'dan-tranh' | 'dan-bau' | 'guitar' | 'violin';
 
@@ -32,6 +34,8 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
   const [detectedInstrument, setDetectedInstrument] = useState<InstrumentType>('piano');
   const [generatedNotes, setGeneratedNotes] = useState<NoteEvent[]>([]);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [midiBuffer, setMidiBuffer] = useState<ArrayBuffer | null>(null);
 
   const processingSteps = [
     'Analyzing audio waveform...',
@@ -54,16 +58,21 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
     }
   });
 
-  const startProcessing = async (file: File) => {
+  const startProcessing = async (file: File, useDemo = false) => {
     setUploadStatus('uploading');
     setProgress(0);
-    
+    setErrorMessage(null);
+
     // Simulate upload progress
     const uploadInterval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(uploadInterval);
-          startAISimulation(file);
+          if (useDemo) {
+            startAISimulation(file);
+          } else {
+            startRealAIProcessing(file);
+          }
           return 100;
         }
         return prev + 5;
@@ -71,29 +80,63 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
     }, 100);
   };
 
+  // Real AI Processing: gửi file lên Google Colab API
+  const startRealAIProcessing = async (file: File) => {
+    setUploadStatus('processing');
+    setProcessingStep(0);
+
+    try {
+      // Step 0: Analyzing audio waveform
+      setProcessingStep(0);
+      await new Promise(r => setTimeout(r, 800));
+
+      // Step 1: Isolating instrument tracks
+      setProcessingStep(1);
+
+      // Gọi API thật
+      const result = await basicPitchAPI.analyzeAudio(file);
+
+      // Step 2: Detecting pitch and rhythm
+      setProcessingStep(2);
+      await new Promise(r => setTimeout(r, 600));
+
+      // Step 3: Generating sheet music
+      setProcessingStep(3);
+      await new Promise(r => setTimeout(r, 400));
+
+      const notes = result.parsedData.score.parts[0]?.staff.measures.flatMap(m => m.notes) || [];
+      const instrument = result.parsedData.detectedInstruments[0]?.id as InstrumentType || 'piano';
+
+      setGeneratedNotes(notes);
+      setDetectedInstrument(instrument);
+      setMidiBuffer(result.midiBuffer);
+      setUploadStatus('success');
+    } catch (error: any) {
+      console.error('AI Processing Error:', error);
+      setErrorMessage(error.message || 'Có lỗi xảy ra khi xử lý bằng AI. Hãy kiểm tra lại Colab API.');
+      setUploadStatus('idle');
+    }
+  };
+
+  // Demo mode: dùng mock data (không cần API)
   const startAISimulation = async (file: File) => {
     setUploadStatus('processing');
     setProcessingStep(0);
-    
-    // Use the mock sheet music generator
+
     const analysis = await mockSheetMusicGenerator.analyzeAudio(file);
-    
-    // Simulate processing steps
+
     let step = 0;
     const stepInterval = setInterval(() => {
       step++;
       setProcessingStep(step);
-      
+
       if (step >= processingSteps.length - 1) {
         clearInterval(stepInterval);
-        
-        // Generate the actual score
+
         const parsedData = mockSheetMusicGenerator.createScore(file, analysis);
-        
-        // Get the first part's notes
         const notes = parsedData.score.parts[0]?.staff.measures.flatMap(m => m.notes) || [];
         const instrument = parsedData.detectedInstruments[0]?.id as InstrumentType || 'piano';
-        
+
         setGeneratedNotes(notes);
         setDetectedInstrument(instrument);
         setUploadStatus('success');
@@ -116,11 +159,25 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
     }
   };
 
+  const handleDownloadMidi = () => {
+    if (!midiBuffer) return;
+    const blob = new Blob([midiBuffer], { type: 'audio/midi' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const fileName = uploadedFile?.name.replace(/\.[^/.]+$/, '') || 'transcription';
+    link.download = `${fileName}_sheet.mid`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const loadDemoForInstrument = (instrument: InstrumentType) => {
     // Create a mock file with instrument name to trigger correct note generation
     const mockFile = new File([''], `demo-${instrument}.mp3`, { type: 'audio/mp3' });
     setUploadedFile(mockFile);
-    startProcessing(mockFile);
+    startProcessing(mockFile, true); // true = use demo/mock mode
   };
 
   const getInstrumentDisplayName = (instrument: InstrumentType): string => {
@@ -137,6 +194,13 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
 
   return (
     <div className="min-h-screen w-full bg-[#FAF7F0] p-6 lg:p-12 flex items-center justify-center relative overflow-hidden">
+      {/* Error Toast */}
+      {errorMessage && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-red-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <span>{errorMessage}</span>
+          <button onClick={() => setErrorMessage(null)} className="ml-2 font-bold hover:opacity-80">✕</button>
+        </div>
+      )}
       {/* Background Decoration */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#D4A574]/10 rounded-full blur-3xl" />
@@ -397,17 +461,27 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
                   </div>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
                   <Button
                     variant="outline"
                     onClick={() => setUploadStatus('idle')}
+                    className="flex-1"
                   >
                     Upload Another
                   </Button>
+                  {midiBuffer && (
+                    <Button
+                      variant="outline"
+                      onClick={handleDownloadMidi}
+                      className="flex-1 border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white"
+                    >
+                      <Download className="mr-2 w-5 h-5" /> Download MIDI
+                    </Button>
+                  )}
                   <Button
                     size="lg"
                     onClick={handleStartLearning}
-                    className="px-8 shadow-xl hover:scale-105 transition-transform"
+                    className="flex-1 px-8 shadow-xl hover:scale-105 transition-transform"
                   >
                     Start Learning <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
