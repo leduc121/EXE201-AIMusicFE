@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '../components/ui/Button';
 import { HowItWorks } from '../components/HowItWorks';
 import { Testimonials } from '../components/Testimonials';
+import { PricingPlans } from '../components/PricingPlans';
 import { ArrowRight, Music, Sparkles } from 'lucide-react';
 interface LandingPageProps {
   onNavigate: (page: string) => void;
@@ -70,13 +71,6 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
 
               Try Demo
             </Button>
-          </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-[#8B4513]/50">
-          <div className="w-6 h-10 border-2 border-current rounded-full flex justify-center pt-2">
-            <div className="w-1 h-2 bg-current rounded-full" />
           </div>
         </div>
       </section>
@@ -159,6 +153,8 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
       </section>
 
       <Testimonials />
+      
+      <PricingPlans />
 
       {/* Final CTA */}
       <section className="py-32 px-6 bg-[#FAF7F0] text-center relative overflow-hidden">
