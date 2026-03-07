@@ -19,16 +19,16 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
         {/* Animated Floating Notes Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
           {[...Array(8)].map((_, i) =>
-          <div
-            key={i}
-            className="absolute text-[#3E2723]/5 animate-float"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              fontSize: `${Math.random() * 100 + 50}px`,
-              animationDuration: `${Math.random() * 10 + 10}s`,
-              animationDelay: `${Math.random() * 5}s`
-            }}>
+            <div
+              key={i}
+              className="absolute text-[#3E2723]/5 animate-float"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                fontSize: `${Math.random() * 100 + 50}px`,
+                animationDuration: `${Math.random() * 10 + 10}s`,
+                animationDelay: `${Math.random() * 5}s`
+              }}>
 
               ♪
             </div>
@@ -92,7 +92,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             <Button
               variant="ghost"
               className="hidden md:flex group"
-              onClick={() => {}}>
+              onClick={() => { }}>
 
               View All Instruments{' '}
               <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -101,46 +101,46 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-            {
-              id: 'dan-tranh',
-              name: 'Đàn Tranh',
-              img: 'https://images.unsplash.com/photo-1680792563719-288027b2a090?q=80&w=2787&auto=format&fit=crop'
-            },
-            {
-              id: 'dan-bau',
-              name: 'Đàn Bầu',
-              img: 'https://images.unsplash.com/photo-1516280440614-6697288d5d38?auto=format&fit=crop&q=80&w=1000'
-            },
-            {
-              id: 'sao-truc',
-              name: 'Sáo Trúc',
-              img: 'https://images.unsplash.com/photo-1665492723785-502693722256?auto=format&fit=crop&q=80&w=1000'
-            }].
-            map((inst) =>
-            <div
-              key={inst.id}
-              onClick={() => onNavigate(`instrument-${inst.id}`)}
-              className="group relative h-[400px] rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500">
-
+              {
+                id: 'dan-tranh',
+                name: 'Đàn Tranh',
+                img: 'https://images.unsplash.com/photo-1680792563719-288027b2a090?q=80&w=2787&auto=format&fit=crop'
+              },
+              {
+                id: 'dan-bau',
+                name: 'Đàn Bầu',
+                img: 'https://images.unsplash.com/photo-1516280440614-6697288d5d38?auto=format&fit=crop&q=80&w=1000'
+              },
+              {
+                id: 'sao-truc',
+                name: 'Sáo Trúc',
+                img: 'https://images.unsplash.com/photo-1665492723785-502693722256?auto=format&fit=crop&q=80&w=1000'
+              }].
+              map((inst) =>
                 <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                style={{
-                  backgroundImage: `url(${inst.img})`
-                }} />
+                  key={inst.id}
+                  onClick={() => onNavigate(`instrument-${inst.id}`)}
+                  className="group relative h-[400px] rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500">
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#3E2723] via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                    style={{
+                      backgroundImage: `url(${inst.img})`
+                    }} />
 
-                <div className="absolute bottom-0 left-0 p-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                  <h3 className="text-3xl font-bold text-[#FAF7F0] mb-2">
-                    {inst.name}
-                  </h3>
-                  <div className="flex items-center text-[#D4A574] opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-                    <span className="font-serif italic mr-2">Learn more</span>
-                    <ArrowRight size={16} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#3E2723] via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+
+                  <div className="absolute bottom-0 left-0 p-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <h3 className="text-3xl font-bold text-[#FAF7F0] mb-2">
+                      {inst.name}
+                    </h3>
+                    <div className="flex items-center text-[#D4A574] opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                      <span className="font-serif italic mr-2">Learn more</span>
+                      <ArrowRight size={16} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
 
           <div className="mt-8 md:hidden text-center">
@@ -153,8 +153,8 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
       </section>
 
       <Testimonials />
-      
-      <PricingPlans />
+
+      <PricingPlans onNavigate={onNavigate} />
 
       {/* Final CTA */}
       <section className="py-32 px-6 bg-[#FAF7F0] text-center relative overflow-hidden">

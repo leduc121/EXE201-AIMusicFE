@@ -5,6 +5,7 @@ import { UploadPage } from './pages/UploadPage';
 import { LearningPage } from './pages/LearningPage';
 import { InstrumentDetailPage } from './pages/InstrumentDetailPage';
 import { LoginPage } from './pages/LoginPage';
+import { PaymentPage } from './pages/PaymentPage';
 import { AudioProvider } from './contexts/AudioContext';
 import { NoteEvent } from './types/music';
 import { PIANO_DEMO_NOTES } from './data/DemoNotes';
@@ -102,12 +103,14 @@ export function App() {
             onBack={() => handleNavigate('landing')}
           />
         );
+      case 'payment':
+        return <PaymentPage onNavigate={handleNavigate} />;
       default:
         return <LandingPage onNavigate={handleNavigate} />;
     }
   };
 
-  const hideSidebar = currentPage === 'learn' || currentPage === 'login' || currentPage === 'signup';
+  const hideSidebar = currentPage === 'learn' || currentPage === 'login' || currentPage === 'signup' || currentPage === 'payment';
 
   return (
     <AudioProvider>
