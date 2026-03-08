@@ -50,7 +50,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
           </h1>
 
           <p className="text-xl md:text-3xl text-[#654321] mb-12 max-w-3xl mx-auto font-serif italic leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
-            Transform any YouTube video into sheet music instantly. Experience
+            Transform any music audio into music sheet instantly. Experience
             the warmth of tradition meeting the precision of AI.
           </p>
 

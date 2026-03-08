@@ -22,7 +22,6 @@ const PLANS: PricingPlan[] = [
     features: [
       'Học 3 nhạc cụ cơ bản',
       'Truy cập 10 bản nhạc mẫu',
-      'Chuyển đổi YouTube thành sheet (1 lần/ngày)',
       'Hỗ trợ cộng đồng'
     ]
   },
@@ -36,7 +35,6 @@ const PLANS: PricingPlan[] = [
     features: [
       'Mở khóa toàn bộ nhạc cụ truyền thống',
       'Kho bản nhạc cao cấp không giới hạn',
-      'Chuyển đổi YouTube không giới hạn',
       'Phân tích kỹ năng chơi đàn bằng AI',
       'Chất lượng âm thanh Lossless HD',
       'Hỗ trợ ưu tiên 24/7'
