@@ -13,6 +13,8 @@ import {
   ChevronLeft,
   Download,
   FileText,
+  Eye,
+  X,
 } from 'lucide-react';
 import { NoteEvent } from '../types/music';
 import { mockSheetMusicGenerator } from '../services/MockSheetMusicGenerator';
@@ -36,6 +38,7 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [midiBuffer, setMidiBuffer] = useState<ArrayBuffer | null>(null);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [showPdfViewer, setShowPdfViewer] = useState(false);
 
   const processingSteps = [
     'Analyzing audio waveform...',
@@ -444,13 +447,22 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
                     </Button>
                   )}
                   {pdfBlob && (
-                    <Button
-                      variant="outline"
-                      onClick={handleDownloadPdf}
-                      className="flex-1 min-w-[170px] border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
-                    >
-                      <FileText className="mr-2 w-5 h-5" /> Download PDF
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={handleDownloadPdf}
+                        className="flex-1 min-w-[170px] border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                      >
+                        <FileText className="mr-2 w-5 h-5" /> Download PDF
+                      </Button>
+                      <Button
+                        variant="default"
+                        onClick={() => setShowPdfViewer(true)}
+                        className="flex-1 min-w-[180px] bg-[#3E2723] text-[#FAF7F0] hover:bg-[#5D4037] shadow-lg"
+                      >
+                        <Eye className="mr-2 w-5 h-5" /> View Sheet Music
+                      </Button>
+                    </>
                   )}
                   <Button
                     size="lg"
@@ -465,6 +477,27 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
           </div>
         </div>
       </div>
+      {/* Full-screen PDF Viewer Modal */}
+      {showPdfViewer && pdfBlob && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col pt-4 px-4 pb-0 items-center justify-center animate-in fade-in duration-300">
+          <div className="flex justify-between w-full max-w-6xl mb-4">
+            <h3 className="text-white text-2xl font-serif">Sheet Music Viewer</h3>
+            <button
+              onClick={() => setShowPdfViewer(false)}
+              className="text-white hover:text-red-400 p-2 rounded-full hover:bg-white/10 transition-colors"
+            >
+              <X size={32} />
+            </button>
+          </div>
+          <div className="w-full max-w-6xl flex-1 bg-white rounded-t-xl overflow-hidden shadow-2xl">
+            <iframe
+              src={URL.createObjectURL(pdfBlob)}
+              className="w-full h-full border-0"
+              title="PDF Sheet Music"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
