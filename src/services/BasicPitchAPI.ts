@@ -13,7 +13,7 @@ import { ParsedMusicData } from '../types/music';
 
 // ====== CONFIG ======
 // Thay URL ngrok mới vào đây mỗi lần khởi động lại Colab
-const API_BASE_URL = 'http://54.169.186.36:5000';
+const API_BASE_URL = 'https://meadow-proexperiment-tobie.ngrok-free.dev';
 
 export class BasicPitchAPI {
     private baseUrl: string;
