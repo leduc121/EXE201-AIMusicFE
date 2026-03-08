@@ -12,6 +12,7 @@ import {
   Sparkles,
   ChevronLeft,
   Download,
+  FileText,
 } from 'lucide-react';
 import { NoteEvent } from '../types/music';
 import { mockSheetMusicGenerator } from '../services/MockSheetMusicGenerator';
@@ -34,6 +35,7 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [midiBuffer, setMidiBuffer] = useState<ArrayBuffer | null>(null);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
 
   const processingSteps = [
     'Analyzing audio waveform...',
@@ -108,6 +110,7 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
       setGeneratedNotes(notes);
       setDetectedInstrument(instrument);
       setMidiBuffer(result.midiBuffer);
+      setPdfBlob(result.pdfBlob);
       setUploadStatus('success');
     } catch (error: any) {
       console.error('AI Processing Error:', error);
@@ -156,6 +159,19 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
     link.href = url;
     const fileName = uploadedFile?.name.replace(/\.[^/.]+$/, '') || 'transcription';
     link.download = `${fileName}_sheet.mid`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadPdf = () => {
+    if (!pdfBlob) return;
+    const url = URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    const fileName = uploadedFile?.name.replace(/\.[^/.]+$/, '') || 'transcription';
+    link.download = `${fileName}_sheet.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -410,11 +426,11 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+                <div className="flex flex-col sm:flex-row gap-4 w-full max-w-2xl justify-center flex-wrap">
                   <Button
                     variant="outline"
                     onClick={() => setUploadStatus('idle')}
-                    className="flex-1"
+                    className="flex-1 min-w-[140px]"
                   >
                     Upload Another
                   </Button>
@@ -422,15 +438,24 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
                     <Button
                       variant="outline"
                       onClick={handleDownloadMidi}
-                      className="flex-1 border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white"
+                      className="flex-1 min-w-[170px] border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white"
                     >
                       <Download className="mr-2 w-5 h-5" /> Download MIDI
+                    </Button>
+                  )}
+                  {pdfBlob && (
+                    <Button
+                      variant="outline"
+                      onClick={handleDownloadPdf}
+                      className="flex-1 min-w-[170px] border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                    >
+                      <FileText className="mr-2 w-5 h-5" /> Download PDF
                     </Button>
                   )}
                   <Button
                     size="lg"
                     onClick={handleStartLearning}
-                    className="flex-1 px-8 shadow-xl hover:scale-105 transition-transform"
+                    className="flex-1 min-w-[180px] px-8 shadow-xl hover:scale-105 transition-transform"
                   >
                     Start Learning <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
