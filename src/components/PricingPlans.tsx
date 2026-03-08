@@ -78,11 +78,11 @@ export function PricingPlans({ onNavigate }: { onNavigate?: (page: string) => vo
           {PLANS.map((plan) => (
             <div
               key={plan.id}
-              className={`relative rounded-3xl transition-all duration-500 p-8 ${plan.id === 'pro'
-                ? 'bg-gradient-to-b from-[#8B4513] to-[#5D4037] text-[#FAF7F0] shadow-2xl scale-100 md:scale-105 z-10'
+              className={`relative rounded-3xl transition-all duration-300 p-8 h-full flex flex-col ${plan.id === 'pro'
+                ? 'bg-gradient-to-b from-[#8B4513] to-[#5D4037] text-[#FAF7F0] shadow-2xl md:scale-105 hover:scale-105 hover:-translate-y-2 z-10'
                 : plan.id === 'studio'
-                  ? 'bg-[#3E2723] border border-[#D4A574]/20 text-[#FAF7F0] shadow-xl hover:shadow-2xl hover:-translate-y-1'
-                  : 'bg-white border border-[#D4A574]/30 shadow-lg text-[#3E2723] hover:shadow-xl hover:-translate-y-1'
+                  ? 'bg-[#3E2723] border border-[#D4A574]/20 text-[#FAF7F0] shadow-xl hover:shadow-2xl hover:-translate-y-2'
+                  : 'bg-white border border-[#D4A574]/30 shadow-lg text-[#3E2723] hover:shadow-xl hover:-translate-y-2'
                 }`}
             >
               {plan.isPopular && (
@@ -127,8 +127,8 @@ export function PricingPlans({ onNavigate }: { onNavigate?: (page: string) => vo
                 {plan.price === 'Miễn phí' ? 'Bắt Đầu Ngay' : 'Chọn Gói Này'}
               </Button>
 
-              <div className="space-y-4">
-                <p className={`text-sm font-bold uppercase tracking-wider ${plan.id === 'pro' ? 'text-[#D4A574]' : plan.id === 'studio' ? 'text-[#D4A574]/80' : 'text-[#654321]'
+              <div className="flex-1 flex flex-col mt-auto">
+                <p className={`text-sm font-bold uppercase tracking-wider mb-4 ${plan.id === 'pro' ? 'text-[#D4A574]' : plan.id === 'studio' ? 'text-[#D4A574]/80' : 'text-[#654321]'
                   }`}>
                   Bao gồm:
                 </p>

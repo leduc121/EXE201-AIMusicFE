@@ -9,12 +9,12 @@ import {
   Music,
   ArrowRight,
   Loader2,
-  Sparkles,
   ChevronLeft,
   Download,
   FileText,
   Eye,
   X,
+  Library
 } from 'lucide-react';
 import { NoteEvent } from '../types/music';
 import { mockSheetMusicGenerator } from '../services/MockSheetMusicGenerator';
@@ -292,8 +292,8 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
 
                 <section className="space-y-6">
                   <div className="flex items-center space-x-4 text-[#3E2723]">
-                    <div className="p-3 bg-amber-50 rounded-full">
-                      <Sparkles className="w-8 h-8 text-amber-600" />
+                    <div className="p-3 bg-[#D4A574]/20 rounded-full">
+                      <Library className="w-8 h-8 text-[#8B4513]" />
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold">Demo Mode</h2>
@@ -456,7 +456,7 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
                         <FileText className="mr-2 w-5 h-5" /> Download PDF
                       </Button>
                       <Button
-                        variant="default"
+                        variant="primary"
                         onClick={() => setShowPdfViewer(true)}
                         className="flex-1 min-w-[180px] bg-[#3E2723] text-[#FAF7F0] hover:bg-[#5D4037] shadow-lg"
                       >
