@@ -13,7 +13,7 @@ import { ParsedMusicData } from '../types/music';
 
 // ====== CONFIG ======
 // Thay URL ngrok mới vào đây mỗi lần khởi động lại Colab
-const API_BASE_URL = 'https://meadow-proexperiment-tobie.ngrok-free.dev';
+const API_BASE_URL = 'https://meyer-spencer-roses-armed.trycloudflare.com';
 
 export class BasicPitchAPI {
     private baseUrl: string;
