@@ -13,7 +13,7 @@ import { ParsedMusicData } from '../types/music';
 
 // ====== CONFIG ======
 // Thay URL ngrok mới vào đây mỗi lần khởi động lại Colab
-const API_BASE_URL = 'https://resources-oriental-why-generates.trycloudflare.com';
+const API_BASE_URL = 'https://construction-ppc-venues-chemistry.trycloudflare.com';
 
 export class BasicPitchAPI {
     private baseUrl: string;
