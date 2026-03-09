@@ -33,9 +33,10 @@ export class BasicPitchAPI {
             method: 'POST',
             body: formData,
             headers: {
-                'ngrok-skip-browser-warning': '69420',
-            },
+                'ngrok-skip-browser-warning': 'true'
+            }
         });
+
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
