@@ -5,9 +5,10 @@ import { Button } from '../components/ui/Button';
 interface LoginPageProps {
   onNavigate: (page: string) => void;
   isSignUp?: boolean;
+  onLogin?: (role: string) => void;
 }
 
-export function LoginPage({ onNavigate, isSignUp = false }: LoginPageProps) {
+export function LoginPage({ onNavigate, isSignUp = false, onLogin }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -15,7 +16,11 @@ export function LoginPage({ onNavigate, isSignUp = false }: LoginPageProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate login/signup
-    onNavigate('landing');
+    if (!isSignUp && email === 'admin@gmail.com' && password === 'admin123') {
+      if (onLogin) onLogin('admin');
+    } else {
+      if (onLogin) onLogin('user');
+    }
   };
 
   return (

@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronDown, Menu, X, Music, Upload, Home, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronDown, Menu, X, Music, Upload, Home } from 'lucide-react';
 import { Button } from './ui/Button';
 
 interface HeaderProps {
   activePage: string;
   onNavigate: (page: string) => void;
+  userRole?: string | null;
+  onLogout?: () => void;
 }
 
-export function Header({ activePage, onNavigate }: HeaderProps) {
+export function Header({ activePage, onNavigate, userRole, onLogout }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInstrumentsDropdownOpen, setIsInstrumentsDropdownOpen] = useState(false);
@@ -120,19 +122,44 @@ export function Header({ activePage, onNavigate }: HeaderProps) {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Button
-              variant="ghost"
-              onClick={() => handleNavigation('login')}
-              className="text-[#8B4513] hover:bg-[#FAF7F0] font-medium"
-            >
-              Log in
-            </Button>
-            <Button
-              onClick={() => handleNavigation('signup')}
-              className="bg-[#8B4513] text-white hover:bg-[#654321] shadow-md border-none"
-            >
-              Sign up
-            </Button>
+            {userRole ? (
+              <>
+                {userRole === 'admin' && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleNavigation('admin-dashboard')}
+                    className="border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white font-medium"
+                  >
+                    Dashboard
+                  </Button>
+                )}
+                <Button
+                  onClick={() => {
+                    if (onLogout) onLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="bg-[#8B4513] text-white hover:bg-[#654321] shadow-md border-none"
+                >
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  onClick={() => handleNavigation('login')}
+                  className="text-[#8B4513] hover:bg-[#FAF7F0] font-medium"
+                >
+                  Log in
+                </Button>
+                <Button
+                  onClick={() => handleNavigation('signup')}
+                  className="bg-[#8B4513] text-white hover:bg-[#654321] shadow-md border-none"
+                >
+                  Sign up
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -180,19 +207,44 @@ export function Header({ activePage, onNavigate }: HeaderProps) {
           </nav>
 
           <div className="flex flex-col gap-3 pt-6 border-t border-[#8B4513]/10 pb-12">
-            <Button
-              className="w-full bg-[#8B4513] text-white py-6 text-lg"
-              onClick={() => handleNavigation('signup')}
-            >
-              Sign up
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full border-[#8B4513] text-[#8B4513] py-6 text-lg hover:bg-[#8B4513] hover:text-white transition-colors"
-              onClick={() => handleNavigation('login')}
-            >
-              Log in
-            </Button>
+            {userRole ? (
+              <>
+                {userRole === 'admin' && (
+                  <Button
+                    className="w-full bg-[#8B4513] text-white py-6 text-lg border-none"
+                    onClick={() => handleNavigation('admin-dashboard')}
+                  >
+                    Dashboard
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  className="w-full border-[#8B4513] text-[#8B4513] py-6 text-lg hover:bg-[#8B4513] hover:text-white transition-colors"
+                  onClick={() => {
+                    if (onLogout) onLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  className="w-full bg-[#8B4513] text-white py-6 text-lg border-none"
+                  onClick={() => handleNavigation('signup')}
+                >
+                  Sign up
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full border-[#8B4513] text-[#8B4513] py-6 text-lg hover:bg-[#8B4513] hover:text-white transition-colors"
+                  onClick={() => handleNavigation('login')}
+                >
+                  Log in
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}
