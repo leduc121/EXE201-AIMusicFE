@@ -7,9 +7,10 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 interface LoginPageProps {
   onNavigate: (page: string) => void;
   isSignUp?: boolean;
+  onLogin?: (role: string) => void;
 }
 
-export function LoginPage({ onNavigate, isSignUp = false }: LoginPageProps) {
+export function LoginPage({ onNavigate, isSignUp = false, onLogin }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -18,57 +19,11 @@ export function LoginPage({ onNavigate, isSignUp = false }: LoginPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const endpoint = isSignUp ? '/auth/register' : '/auth/login';
-      const body = isSignUp
-        ? { email, password, fullName: name }
-        : { email, password };
-
-      const response = await fetch(`${API_BASE}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      const json = await response.json();
-      const data = json.data || json;
-
-      if (!response.ok) {
-        throw new Error(data.message || json.message || 'Login failed');
-      }
-
-      if (isSignUp) {
-        // After registration, switch to login
-        setError('');
-        alert('Account created! Please check your email for verification, then sign in.');
-        onNavigate('login');
-        return;
-      }
-
-      // Save tokens to localStorage
-      if (data.access_token) {
-        localStorage.setItem('access_token', data.access_token);
-      }
-      if (data.refresh_token) {
-        localStorage.setItem('refresh_token', data.refresh_token);
-      }
-      if (data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-      }
-
-      // Check if admin → redirect to admin dashboard
-      if (data.user?.role === 'admin') {
-        onNavigate('admin');
-      } else {
-        onNavigate('landing');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+    // Simulate login/signup
+    if (!isSignUp && email === 'admin@gmail.com' && password === 'admin123') {
+      if (onLogin) onLogin('admin');
+    } else {
+      if (onLogin) onLogin('user');
     }
   };
 

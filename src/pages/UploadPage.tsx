@@ -9,10 +9,12 @@ import {
   Music,
   ArrowRight,
   Loader2,
-  Sparkles,
   ChevronLeft,
   Download,
+  FileText,
   Eye,
+  X,
+  Library
 } from 'lucide-react';
 import { NoteEvent } from '../types/music';
 import { mockSheetMusicGenerator } from '../services/MockSheetMusicGenerator';
@@ -35,15 +37,8 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [midiBuffer, setMidiBuffer] = useState<ArrayBuffer | null>(null);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [showPdfPreview, setShowPdfPreview] = useState(false);
-  const [generationId, setGenerationId] = useState<string | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-    };
-  }, [pdfUrl]);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [showPdfViewer, setShowPdfViewer] = useState(false);
 
   const processingSteps = [
     'Analyzing audio waveform...',
@@ -125,8 +120,7 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
       setGeneratedNotes(notes);
       setDetectedInstrument(instrument);
       setMidiBuffer(result.midiBuffer);
-      setPdfUrl(result.pdfObjectUrl);
-      setGenerationId(result.generationId);
+      setPdfBlob(result.pdfBlob);
       setUploadStatus('success');
     } catch (error: any) {
       console.error('AI Processing Error:', error);
@@ -182,14 +176,16 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
   };
 
   const handleDownloadPdf = () => {
-    if (!pdfUrl) return;
+    if (!pdfBlob) return;
+    const url = URL.createObjectURL(pdfBlob);
     const link = document.createElement('a');
-    link.href = pdfUrl;
+    link.href = url;
     const fileName = uploadedFile?.name.replace(/\.[^/.]+$/, '') || 'transcription';
     link.download = `${fileName}_sheet.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const loadDemoForInstrument = (instrument: InstrumentType) => {
@@ -303,8 +299,8 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
 
                 <section className="space-y-6">
                   <div className="flex items-center space-x-4 text-[#3E2723]">
-                    <div className="p-3 bg-amber-50 rounded-full">
-                      <Sparkles className="w-8 h-8 text-amber-600" />
+                    <div className="p-3 bg-[#D4A574]/20 rounded-full">
+                      <Library className="w-8 h-8 text-[#8B4513]" />
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold">Demo Mode</h2>
@@ -461,10 +457,11 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+                <div className="flex flex-col sm:flex-row gap-4 w-full max-w-2xl justify-center flex-wrap">
                   <Button
                     variant="outline"
                     onClick={() => setUploadStatus('idle')}
+                    className="flex-1 min-w-[140px]"
                   >
                     Upload Another
                   </Button>
@@ -491,15 +488,33 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
                     <Button
                       variant="outline"
                       onClick={handleDownloadMidi}
-                      className="border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white"
+                      className="flex-1 min-w-[170px] border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white"
                     >
                       <Download className="mr-2 w-5 h-5" /> Download MIDI
                     </Button>
                   )}
+                  {pdfBlob && (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={handleDownloadPdf}
+                        className="flex-1 min-w-[170px] border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                      >
+                        <FileText className="mr-2 w-5 h-5" /> Download PDF
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={() => setShowPdfViewer(true)}
+                        className="flex-1 min-w-[180px] bg-[#3E2723] text-[#FAF7F0] hover:bg-[#5D4037] shadow-lg"
+                      >
+                        <Eye className="mr-2 w-5 h-5" /> View Sheet Music
+                      </Button>
+                    </>
+                  )}
                   <Button
                     size="lg"
                     onClick={handleStartLearning}
-                    className="px-8 shadow-xl hover:scale-105 transition-transform sm:col-span-2"
+                    className="flex-1 min-w-[180px] px-8 shadow-xl hover:scale-105 transition-transform"
                   >
                     Start Simulation <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
@@ -519,6 +534,27 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
           </div>
         </div>
       </div>
+      {/* Full-screen PDF Viewer Modal */}
+      {showPdfViewer && pdfBlob && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col pt-4 px-4 pb-0 items-center justify-center animate-in fade-in duration-300">
+          <div className="flex justify-between w-full max-w-6xl mb-4">
+            <h3 className="text-white text-2xl font-serif">Sheet Music Viewer</h3>
+            <button
+              onClick={() => setShowPdfViewer(false)}
+              className="text-white hover:text-red-400 p-2 rounded-full hover:bg-white/10 transition-colors"
+            >
+              <X size={32} />
+            </button>
+          </div>
+          <div className="w-full max-w-6xl flex-1 bg-white rounded-t-xl overflow-hidden shadow-2xl">
+            <iframe
+              src={URL.createObjectURL(pdfBlob)}
+              className="w-full h-full border-0"
+              title="PDF Sheet Music"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

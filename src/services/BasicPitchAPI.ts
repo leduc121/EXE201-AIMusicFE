@@ -6,13 +6,14 @@
  */
 
 import { Midi } from '@tonejs/midi';
+import JSZip from 'jszip';
 import { NoteEvent, NoteName } from '../types/music';
 import { MusicParser } from './MusicParser';
 import { ParsedMusicData } from '../types/music';
 
 // ====== CONFIG ======
 // Thay URL ngrok mới vào đây mỗi lần khởi động lại Colab
-const API_BASE_URL = 'https://meadow-proexperiment-tobie.ngrok-free.dev';
+const API_BASE_URL = 'https://construction-ppc-venues-chemistry.trycloudflare.com';
 
 export class BasicPitchAPI {
     private baseUrl: string;
@@ -22,9 +23,9 @@ export class BasicPitchAPI {
     }
 
     /**
-     * Gửi file audio lên Colab API và nhận về file MIDI
+     * Gửi file audio lên Colab API và nhận về file ZIP (chứa MIDI và PDF)
      */
-    async convertAudioToMidi(audioFile: File): Promise<ArrayBuffer> {
+    async convertAudioToMidiAndPdf(audioFile: File): Promise<{ midiBuffer: ArrayBuffer, pdfBlob: Blob | null }> {
         const formData = new FormData();
         formData.append('audio', audioFile);
 
@@ -32,17 +33,45 @@ export class BasicPitchAPI {
             method: 'POST',
             body: formData,
             headers: {
-                // Header này để ngrok không chặn request từ trình duyệt
-                'ngrok-skip-browser-warning': '69420',
-            },
+                'ngrok-skip-browser-warning': 'true'
+            }
         });
+
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
             throw new Error(errorData.error || `API Error: ${response.status}`);
         }
 
-        return response.arrayBuffer();
+        const zipBuffer = await response.arrayBuffer();
+
+        // Giải nén ZIP
+        const zip = new JSZip();
+        const loadedZip = await zip.loadAsync(zipBuffer);
+
+        let midiBuffer: ArrayBuffer | null = null;
+        let pdfBlob: Blob | null = null;
+
+        // Tìm file trong ZIP
+        for (const filename of Object.keys(loadedZip.files)) {
+            if (filename.endsWith('.mid')) {
+                midiBuffer = await loadedZip.files[filename].async('arraybuffer');
+            } else if (filename.endsWith('.pdf')) {
+                const pdfUint8 = await loadedZip.files[filename].async('uint8array');
+                const arrayBuffer = new ArrayBuffer(pdfUint8.length);
+                const view = new Uint8Array(arrayBuffer);
+                for (let i = 0; i < pdfUint8.length; ++i) {
+                    view[i] = pdfUint8[i];
+                }
+                pdfBlob = new Blob([arrayBuffer], { type: 'application/pdf' });
+            }
+        }
+
+        if (!midiBuffer) {
+            throw new Error("Không tìm thấy file MIDI trong kết quả trả về.");
+        }
+
+        return { midiBuffer, pdfBlob };
     }
 
     /**
@@ -85,10 +114,11 @@ export class BasicPitchAPI {
         notes: NoteEvent[];
         parsedData: ParsedMusicData;
         midiBuffer: ArrayBuffer;
+        pdfBlob: Blob | null;
         tempo: number;
     }> {
         // Bước 1: Gọi API
-        const midiBuffer = await this.convertAudioToMidi(audioFile);
+        const { midiBuffer, pdfBlob } = await this.convertAudioToMidiAndPdf(audioFile);
 
         // Bước 2: Parse MIDI
         const midi = new Midi(midiBuffer);
@@ -115,7 +145,7 @@ export class BasicPitchAPI {
 
         const parsedData = MusicParser.fromAIOutput(aiData);
 
-        return { notes, parsedData, midiBuffer, tempo };
+        return { notes, parsedData, midiBuffer, pdfBlob, tempo };
     }
 
     // ====== Helper methods ======

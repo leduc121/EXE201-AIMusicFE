@@ -25,6 +25,7 @@ export function App() {
   );
   const [currentInstrumentId, setCurrentInstrumentId] = useState('');
   const [learningSession, setLearningSession] = useState<LearningSession | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(localStorage.getItem('userRole'));
 
   const handleNavigate = (page: string) => {
     if (page.startsWith('instrument-')) {
@@ -34,6 +35,18 @@ export function App() {
     } else {
       setCurrentPage(page);
     }
+  };
+
+  const handleLogin = (role: string) => {
+    localStorage.setItem('userRole', role);
+    setUserRole(role);
+    handleNavigate('landing');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('userRole');
+    setUserRole(null);
+    handleNavigate('landing');
   };
 
   const handleStartLearning = (instrument: InstrumentType, notes: NoteEvent[], audioFile?: File) => {
@@ -95,9 +108,9 @@ export function App() {
         const props = getLearningPageProps();
         return <LearningPage {...props} onBack={() => handleNavigate('landing')} />;
       case 'login':
-        return <LoginPage onNavigate={handleNavigate} isSignUp={false} />;
+        return <LoginPage onNavigate={handleNavigate} isSignUp={false} onLogin={handleLogin} />;
       case 'signup':
-        return <LoginPage onNavigate={handleNavigate} isSignUp={true} />;
+        return <LoginPage onNavigate={handleNavigate} isSignUp={true} onLogin={handleLogin} />;
       case 'instrument-detail':
         return (
           <InstrumentDetailPage
@@ -108,20 +121,20 @@ export function App() {
         );
       case 'payment':
         return <PaymentPage onNavigate={handleNavigate} />;
-      case 'admin':
-        return <AdminDashboardPage />;
+      case 'admin-dashboard':
+        return <AdminDashboardPage onNavigate={handleNavigate} onLogout={handleLogout} />;
       default:
         return <LandingPage onNavigate={handleNavigate} />;
     }
   };
 
-  const hideSidebar = currentPage === 'learn' || currentPage === 'login' || currentPage === 'signup' || currentPage === 'payment' || currentPage === 'admin';
+  const hideSidebar = currentPage === 'learn' || currentPage === 'login' || currentPage === 'signup' || currentPage === 'payment';
 
   return (
     <AudioProvider>
       <div className="flex flex-col min-h-screen bg-[#FAF7F0] font-serif text-[#3E2723]">
         {!hideSidebar && (
-          <Header activePage={currentPage} onNavigate={handleNavigate} />
+          <Header activePage={currentPage} onNavigate={handleNavigate} userRole={userRole} onLogout={handleLogout} />
         )}
 
         <main className={`flex-1 transition-all duration-300 w-full`}>
