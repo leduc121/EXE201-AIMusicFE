@@ -6,6 +6,7 @@ import { LearningPage } from './pages/LearningPage';
 import { InstrumentDetailPage } from './pages/InstrumentDetailPage';
 import { LoginPage } from './pages/LoginPage';
 import { PaymentPage } from './pages/PaymentPage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { AudioProvider } from './contexts/AudioContext';
 import { NoteEvent } from './types/music';
 import { PIANO_DEMO_NOTES } from './data/DemoNotes';
@@ -19,7 +20,9 @@ interface LearningSession {
 }
 
 export function App() {
-  const [currentPage, setCurrentPage] = useState('landing');
+  const [currentPage, setCurrentPage] = useState(() =>
+    window.location.pathname.includes('/admin') ? 'admin' : 'landing',
+  );
   const [currentInstrumentId, setCurrentInstrumentId] = useState('');
   const [learningSession, setLearningSession] = useState<LearningSession | null>(null);
 
@@ -105,12 +108,14 @@ export function App() {
         );
       case 'payment':
         return <PaymentPage onNavigate={handleNavigate} />;
+      case 'admin':
+        return <AdminDashboardPage />;
       default:
         return <LandingPage onNavigate={handleNavigate} />;
     }
   };
 
-  const hideSidebar = currentPage === 'learn' || currentPage === 'login' || currentPage === 'signup' || currentPage === 'payment';
+  const hideSidebar = currentPage === 'learn' || currentPage === 'login' || currentPage === 'signup' || currentPage === 'payment' || currentPage === 'admin';
 
   return (
     <AudioProvider>

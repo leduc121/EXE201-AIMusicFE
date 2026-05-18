@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -12,10 +12,11 @@ import {
   Sparkles,
   ChevronLeft,
   Download,
+  Eye,
 } from 'lucide-react';
 import { NoteEvent } from '../types/music';
 import { mockSheetMusicGenerator } from '../services/MockSheetMusicGenerator';
-import { basicPitchAPI } from '../services/BasicPitchAPI';
+import { backendMusicAPI } from '../services/BackendMusicAPI';
 
 type InstrumentType = 'piano' | 'flute' | 'dan-tranh' | 'dan-bau' | 'guitar' | 'violin';
 
@@ -34,6 +35,15 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [midiBuffer, setMidiBuffer] = useState<ArrayBuffer | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [generationId, setGenerationId] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
 
   const processingSteps = [
     'Analyzing audio waveform...',
@@ -60,6 +70,13 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
     setUploadStatus('uploading');
     setProgress(0);
     setErrorMessage(null);
+    setShowPdfPreview(false);
+    setGenerationId(null);
+    setMidiBuffer(null);
+    if (pdfUrl) {
+      URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+    }
 
     // Simulate upload progress
     const uploadInterval = setInterval(() => {
@@ -92,7 +109,7 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
       setProcessingStep(1);
 
       // Gọi API thật
-      const result = await basicPitchAPI.analyzeAudio(file);
+      const result = await backendMusicAPI.analyzeAudio(file, detectedInstrument);
 
       // Step 2: Detecting pitch and rhythm
       setProcessingStep(2);
@@ -108,10 +125,12 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
       setGeneratedNotes(notes);
       setDetectedInstrument(instrument);
       setMidiBuffer(result.midiBuffer);
+      setPdfUrl(result.pdfObjectUrl);
+      setGenerationId(result.generationId);
       setUploadStatus('success');
     } catch (error: any) {
       console.error('AI Processing Error:', error);
-      setErrorMessage(error.message || 'Có lỗi xảy ra khi xử lý bằng AI. Hãy kiểm tra lại Colab API.');
+      setErrorMessage(error.message || 'AI processing failed. Check the AI service and try again.');
       setUploadStatus('idle');
     }
   };
@@ -160,6 +179,17 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadPdf = () => {
+    if (!pdfUrl) return;
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    const fileName = uploadedFile?.name.replace(/\.[^/.]+$/, '') || 'transcription';
+    link.download = `${fileName}_sheet.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const loadDemoForInstrument = (instrument: InstrumentType) => {
@@ -408,21 +438,60 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
                     </h4>
                     <p className="text-[#8B4513]">{generatedNotes.length} notes detected</p>
                   </div>
+                  {generationId && (
+                    <div className="mt-4">
+                      <h4 className="font-bold text-[#3E2723] mb-2 uppercase text-sm tracking-wider">
+                        Simulation Instrument
+                      </h4>
+                      <select
+                        value={detectedInstrument}
+                        onChange={(event) =>
+                          setDetectedInstrument(event.target.value as InstrumentType)
+                        }
+                        className="w-full rounded-lg border border-[#D4A574]/40 bg-white px-3 py-2 text-[#3E2723] outline-none focus:border-[#8B4513]"
+                      >
+                        <option value="piano">Piano</option>
+                        <option value="flute">Sao Truc</option>
+                        <option value="dan-tranh">Dan Tranh</option>
+                        <option value="dan-bau">Dan Bau</option>
+                        <option value="guitar">Guitar</option>
+                        <option value="violin">Violin</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
                   <Button
                     variant="outline"
                     onClick={() => setUploadStatus('idle')}
-                    className="flex-1"
                   >
                     Upload Another
                   </Button>
+                  {pdfUrl && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowPdfPreview((value) => !value)}
+                      className="border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white"
+                    >
+                      <Eye className="mr-2 w-5 h-5" />
+                      {showPdfPreview ? 'Hide PDF' : 'View PDF'}
+                    </Button>
+                  )}
+                  {pdfUrl && (
+                    <Button
+                      variant="outline"
+                      onClick={handleDownloadPdf}
+                      className="border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white"
+                    >
+                      <Download className="mr-2 w-5 h-5" /> Download PDF
+                    </Button>
+                  )}
                   {midiBuffer && (
                     <Button
                       variant="outline"
                       onClick={handleDownloadMidi}
-                      className="flex-1 border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white"
+                      className="border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white"
                     >
                       <Download className="mr-2 w-5 h-5" /> Download MIDI
                     </Button>
@@ -430,11 +499,21 @@ export function UploadPage({ onStartLearning, onBack }: UploadPageProps) {
                   <Button
                     size="lg"
                     onClick={handleStartLearning}
-                    className="flex-1 px-8 shadow-xl hover:scale-105 transition-transform"
+                    className="px-8 shadow-xl hover:scale-105 transition-transform sm:col-span-2"
                   >
-                    Start Learning <ArrowRight className="ml-2 w-5 h-5" />
+                    Start Simulation <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </div>
+
+                {showPdfPreview && pdfUrl && (
+                  <div className="mt-8 w-full max-w-4xl rounded-xl border border-[#D4A574]/40 bg-white p-3 shadow-lg">
+                    <iframe
+                      src={pdfUrl}
+                      title="Generated sheet music PDF"
+                      className="h-[640px] w-full rounded-lg bg-[#FAF7F0]"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
